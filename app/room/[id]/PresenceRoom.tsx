@@ -6,7 +6,6 @@ import names from "random-names-generator";
 import {
   AblyProvider,
   ChannelProvider,
-  useAbly,
   useChannel,
   usePresence,
   usePresenceListener,
@@ -15,11 +14,9 @@ import {
   useState,
   ReactElement,
   FC,
-  MouseEventHandler,
-  MouseEvent,
-  useEffect,
   Dispatch,
   SetStateAction,
+  useEffect,
 } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Card from "../../../components/Card";
@@ -94,17 +91,20 @@ const PresenceList: FC<any> = ({
   isHost,
 }): ReactElement => {
   const { updateStatus } = usePresence(roomId, { status: "available" });
-  const { presenceData } = usePresenceListener(roomId, (member) => {
-    console.log("member", member);
-  });
+  const { presenceData } = usePresenceListener(roomId, (member) => {});
 
-  const onReady = () => {
-    console.log("presenceData", presenceData);
+  const [inRoom, setInRoom] = useState(new Map());
+
+  useEffect(() => {
     const newMap = new Map();
     for (let i = 0; i < presenceData.length; i++) {
-      newMap.set(presenceData[0].clientId, "");
+      newMap.set(presenceData[i].clientId, "");
     }
-    setAnswers(newMap);
+    setInRoom(newMap);
+  }, [presenceData]);
+
+  const onReady = () => {
+    setAnswers(inRoom);
     setIsReady(true);
   };
 
@@ -161,7 +161,6 @@ function PubSubMessages({
   const [submittedAnswer, setSubmittedAnswer] = useState("");
 
   const { channel } = useChannel(roomId, (message: Ably.Message) => {
-    console.log(message);
     if (message.name === QUESTIONS_CHANNEL) {
       if (message.data.oddPlayer === clientId) {
         setQuestion(message.data.oddQuestion);
@@ -193,7 +192,7 @@ function PubSubMessages({
   };
 
   const sendQuestion = () => {
-    const randomPlayerIndex = getRandomInt(answers.entries.length);
+    const randomPlayerIndex = getRandomInt(answers.size);
     const randomQuestionIndex = getRandomInt(questions.length);
     const randomIndex = getRandomInt(2);
     const keys = Array.from(answers.keys());
