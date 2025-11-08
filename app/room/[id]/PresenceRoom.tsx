@@ -20,7 +20,7 @@ import {
 } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Card from "../../../components/Card";
-import { CheckIcon, MessageCircleMore, UserRound } from "lucide-react";
+import { CheckIcon, Copy, MessageCircleMore, UserRound } from "lucide-react";
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
 import { toast } from "react-toastify";
@@ -43,6 +43,7 @@ export default function Presence({ data }: { data: Question[] }) {
   const [roomId] = useState(`room:` + params.id);
   const [answers, setAnswers] = useState(new Map());
   const [isReady, setIsReady] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
 
   const client = new Ably.Realtime({
     authUrl: "/token",
@@ -50,12 +51,24 @@ export default function Presence({ data }: { data: Question[] }) {
     clientId: username,
   });
 
+  const onCopy = () => {
+    navigator.clipboard.writeText(
+      typeof params.id === "string" ? params.id : ""
+    );
+    setCopyStatus("copied!");
+  };
+
   return (
     <AblyProvider client={client}>
       <ChannelProvider channelName={roomId}>
         <div className="flex flex-col gap-2 items-center">
-          <div className="text-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+          <div className="flex flex-row items-end gap-2 text-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
             {`Room ID: ` + params.id}
+            {!copyStatus ? (
+              <Copy onClick={onCopy} className="h-5 text-amber-400" />
+            ) : (
+              <div className="text-sm">{copyStatus}</div>
+            )}
           </div>
           <div className="text-lg">Players in the room</div>
           <PresenceList
@@ -113,13 +126,13 @@ const PresenceList: FC<any> = ({
       <Card>
         <div className="min-w-[227px] max-h-52 overflow-y-auto">
           <ul>
-            {presenceData.map((member) => {
+            {[...inRoom.keys()].map((k) => {
               return (
-                <li className="" key={member.id}>
+                <li className="" key={k}>
                   <div className="flex flex-row items-center gap-2">
                     <UserRound className="w-4 h-4" />
-                    <div>{member.clientId}</div>
-                    {answers.get(member.clientId) && (
+                    <div>{k}</div>
+                    {answers.get(k) && (
                       <CheckIcon className="h-5 text-green-800" />
                     )}
                   </div>
