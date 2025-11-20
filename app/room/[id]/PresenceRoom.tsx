@@ -172,13 +172,16 @@ function PubSubMessages({
   const [answer, setAnswer] = useState("");
   const [areAnswersDisplayed, setAreAnswersDisplayed] = useState(false);
   const [submittedAnswer, setSubmittedAnswer] = useState("");
+  const [mainQuestion, setMainQuestion] = useState("");
 
   const { channel } = useChannel(roomId, (message: Ably.Message) => {
     if (message.name === QUESTIONS_CHANNEL) {
       if (message.data.oddPlayer === clientId) {
         setQuestion(message.data.oddQuestion);
+        setMainQuestion(message.data.mainQuestion);
       } else {
         setQuestion(message.data.mainQuestion);
+        setMainQuestion(message.data.mainQuestion);
       }
     } else if (message.name === ANSWERS_CHANNEL) {
       toast.success(message.clientId + " submitted an answer", {
@@ -288,7 +291,7 @@ function PubSubMessages({
           <Card>
             <div className="flex flex-col gap-2">
               <div className="text-xl text-center font-semibold">
-                {question}
+                {areAnswersDisplayed ? mainQuestion : question}
               </div>
               {areAnswersDisplayed ? (
                 <div className="grid grid-cols-2 gap-3">

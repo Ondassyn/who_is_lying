@@ -10,8 +10,11 @@ const PresenceRoom = dynamic(() => import("./PresenceRoom.tsx"), {
 });
 
 const Presence = async () => {
-  const response = await fetch(process.env.URL + "/api/questions");
+  const response = await fetch(process.env.URL + "/api/questions", {
+    cache: "no-store",
+  });
   const data = await response.json();
+
   return (
     <>
       <div className="h-screen flex flex-col justify-center items-center">
