@@ -105,12 +105,6 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
       const newMap = new Map(players);
       for (const key of Object.keys(valObject)) {
         newMap.set(key, valObject[key].answer);
-        if (valObject[key].answer) {
-          toast.success(key + " submitted an answer", {
-            position: "top-center",
-            autoClose: 2000,
-          });
-        }
       }
       setPlayers(newMap);
     });
@@ -312,10 +306,7 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
               <Button text="Start" onClick={onStart} loading={loadingStart} />
             )
           ) : (
-            <div className="flex flex-col gap-2 items-center mt-6">
-              <LoadingDots />
-              <div>{"Waiting for the host to start the game"}</div>
-            </div>
+            <div></div>
           )}
         </div>
       </div>
