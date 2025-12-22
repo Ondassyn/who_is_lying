@@ -35,6 +35,10 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
   const [mainQuestion, setMainQuestion] = useState("");
   const [oddQuestion, setOddQuestion] = useState("");
   const [oddPlayer, setOddPlayer] = useState("");
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [loadingShowAnswers, setLoadingShowAnswers] = useState(false);
+  const [loadingAnotherQuestion, setLoadingAnotherQuestion] = useState(false);
+  const [loadingStart, setLoadingStart] = useState(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -143,7 +147,7 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
     sendQuestion();
   };
 
-  const sendQuestion = () => {
+  const sendQuestion = async () => {
     const randomPlayerIndex = getRandomInt(players.size);
     const randomQuestionIndex = getRandomInt(data.length);
     const randomIndex = getRandomInt(2);
@@ -194,14 +198,17 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
   };
 
   const onSubmit = () => {
-    set(ref(db, `rooms/${roomId}/players/${username}/answer`), answer);
-    setSubmittedAnswer(answer);
+    setLoadingSubmit(true);
+    set(ref(db, `rooms/${roomId}/players/${username}/answer`), answer)
+      .then(() => setSubmittedAnswer(answer))
+      .catch((e) => toast.error("Submit failed: " + e))
+      .finally(() => setLoadingSubmit(false));
   };
 
   return (
     <div className="max-w-[600] w-full">
       <div className="flex flex-col gap-4 items-center px-2 w-full">
-        <div className="flex flex-row items-end gap-2 font-semibold text-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+        <div className="flex flex-row items-end gap-2 font-semibold text-2xl bg-linear-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
           {`Room ID: ` + params.id}
           {!copyStatus ? (
             <Copy onClick={onCopy} className="h-5 text-amber-400" />
@@ -238,7 +245,11 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
                     </div>
                   ) : (
                     <div className="mt-2">
-                      <Button text="Submit" onClick={onSubmit} />
+                      <Button
+                        text="Submit"
+                        onClick={onSubmit}
+                        loading={loadingSubmit}
+                      />
                     </div>
                   )}
                 </div>
@@ -286,11 +297,19 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
           {isHost ? (
             mainQuestion ? (
               <div className="flex flex-row gap-2 justify-center">
-                <Button text="Another question" onClick={onAnotherQuestion} />
-                <Button text="Show answers" onClick={showAnswers} />
+                <Button
+                  text="Another question"
+                  onClick={onAnotherQuestion}
+                  loading={loadingAnotherQuestion}
+                />
+                <Button
+                  text="Show answers"
+                  onClick={showAnswers}
+                  loading={loadingShowAnswers}
+                />
               </div>
             ) : (
-              <Button text="Start" onClick={onStart} />
+              <Button text="Start" onClick={onStart} loading={loadingStart} />
             )
           ) : (
             <div className="flex flex-col gap-2 items-center mt-6">

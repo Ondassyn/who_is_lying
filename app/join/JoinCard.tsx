@@ -17,6 +17,8 @@ const JoinCard = () => {
 
   const [name, setName] = useState("");
   const [roomID, setRoomID] = useState("");
+  const [loadingCreate, setLoadingCreate] = useState(false);
+  const [loadingJoin, setLoadingJoin] = useState(false);
 
   const onJoin = () => {
     if (!name) {
@@ -29,6 +31,8 @@ const JoinCard = () => {
       return;
     }
 
+    setLoadingJoin(true);
+
     const playerData = {
       isAdmin: false,
       answer: "",
@@ -37,11 +41,17 @@ const JoinCard = () => {
       db,
       `rooms/${roomID.toUpperCase()}/players/${name}`
     );
-    set(newPlayerRef, playerData);
 
-    router.push(
-      `/room/${roomID.toUpperCase()}?username=${name}&isHost=${false}`
-    );
+    set(newPlayerRef, playerData)
+      .then(() => {
+        router.push(
+          `/room/${roomID.toUpperCase()}?username=${name}&isHost=false`
+        );
+      })
+      .catch((e) => {
+        toast.error("Failed: " + e);
+        setLoadingJoin(false);
+      });
   };
 
   const onCreate = async () => {
@@ -57,7 +67,16 @@ const JoinCard = () => {
       players: { [name]: { isAdmin: true, answer: "" } },
     };
 
-    await set(ref(db, `rooms/${GeneratedID}`), roomData);
+    setLoadingCreate(true);
+
+    set(ref(db, `rooms/${GeneratedID}`), roomData)
+      .then(() => {
+        router.push(`/room/${GeneratedID}?username=${name}&isHost=${true}`);
+      })
+      .catch((e) => {
+        toast.error("Failed: " + e);
+        setLoadingCreate(false);
+      });
 
     router.push(`/room/${GeneratedID}?username=${name}&isHost=${true}`);
   };
@@ -74,7 +93,11 @@ const JoinCard = () => {
           />
           <div className="flex flex-col gap-1">
             <div>
-              <Button text="Create room" onClick={onCreate} />
+              <Button
+                text="Create room"
+                onClick={onCreate}
+                loading={loadingCreate}
+              />
             </div>
 
             <div className="flex flex-row items-center w-full gap-4">
@@ -91,7 +114,7 @@ const JoinCard = () => {
                 Icon={Hash}
               />
               <div className="w-28">
-                <Button text="Join" onClick={onJoin} />
+                <Button text="Join" onClick={onJoin} loading={loadingJoin} />
               </div>
             </div>
           </div>
