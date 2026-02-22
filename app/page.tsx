@@ -1,5 +1,7 @@
 import Image from "next/image";
 import JoinCard from "./join/JoinCard";
+import { Suspense } from "react";
+import JoinCardSkeleton from "@/components/JoinCardSkeleton";
 
 export default function Home() {
   return (
@@ -10,7 +12,9 @@ export default function Home() {
         width={300} // Intrinsic width of the image in pixels
         height={200} // Intrinsic height of the image in pixels
       />
-      <JoinCard />
+      <Suspense fallback={<JoinCardSkeleton />}>
+        <JoinCard />
+      </Suspense>
     </div>
   );
 }
