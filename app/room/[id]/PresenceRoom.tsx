@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Card from "../../../components/Card";
-import { Copy, MessageCircleMore, UserRound } from "lucide-react";
+import { Copy, MessageCircleMore, QrCode, UserRound, X } from "lucide-react";
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
 import { toast } from "react-toastify";
@@ -11,6 +11,7 @@ import { getRandomInt } from "../../../lib/util/getRandomInt";
 import LoadingDots from "../../../components/LoadingDots";
 import { onChildAdded, onValue, ref, set } from "firebase/database";
 import { db } from "@/lib/firebase";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Question {
   _id: string;
@@ -39,6 +40,7 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
   const [loadingShowAnswers, setLoadingShowAnswers] = useState(false);
   const [loadingAnotherQuestion, setLoadingAnotherQuestion] = useState(false);
   const [loadingStart, setLoadingStart] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -130,9 +132,17 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
     }
   }, [areAnswersDisplayed]);
 
+  const getJoinURL = () => {
+    if (typeof window !== "undefined") {
+      // Pointing to your home/join page with the room query param
+      return `${window.location.origin}/?room=${roomId}`;
+    }
+    return "";
+  };
+
   const onCopy = () => {
     navigator.clipboard.writeText(
-      typeof params.id === "string" ? params.id : ""
+      typeof params.id === "string" ? params.id : "",
     );
     setCopyStatus("copied!");
   };
@@ -151,14 +161,14 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
       ref(db, `rooms/${roomId}/mainQuestion`),
       randomIndex
         ? data[randomQuestionIndex].mainQuestion
-        : data[randomQuestionIndex].oddQuestion
+        : data[randomQuestionIndex].oddQuestion,
     );
 
     set(
       ref(db, `rooms/${roomId}/oddQuestion`),
       randomIndex
         ? data[randomQuestionIndex].oddQuestion
-        : data[randomQuestionIndex].mainQuestion
+        : data[randomQuestionIndex].mainQuestion,
     );
 
     set(ref(db, `rooms/${roomId}/oddPlayer`), keys[randomPlayerIndex]);
@@ -201,6 +211,32 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
 
   return (
     <div className="max-w-[600] w-full">
+      {showQR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="relative bg-white p-8 rounded-2xl flex flex-col items-center gap-4 shadow-2xl animate-in zoom-in duration-200">
+            <button
+              onClick={() => setShowQR(false)}
+              className="absolute top-2 right-2 p-1 text-slate-500 hover:text-black"
+            >
+              <X size={24} />
+            </button>
+
+            <h2 className="text-black font-bold text-xl">Invite Players</h2>
+
+            <div className="bg-white p-2 border-4 border-amber-400 rounded-xl">
+              <QRCodeSVG value={getJoinURL()} size={250} />
+            </div>
+
+            <div className="text-center">
+              <p className="text-slate-600 text-sm">Scan to join room</p>
+              <p className="text-amber-600 font-mono font-bold text-lg">
+                {roomId}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 items-center px-2 w-full">
         <div className="flex flex-row items-end gap-2 font-semibold text-2xl bg-linear-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
           {`Room ID: ` + params.id}
@@ -211,6 +247,17 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
           )}
         </div>
 
+        <button
+          onClick={() => setShowQR(true)}
+          className="p-1.5 -mt-2 bg-amber-400/10 rounded-lg border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
+          title="Show QR Code"
+        >
+          <div className="flex gap-2 items-center">
+            Show QR Code
+            <QrCode className="h-5 w-5 text-amber-500" />
+          </div>
+        </button>
+
         {mainQuestion ? (
           <Card>
             <div className="flex flex-col gap-8">
@@ -218,8 +265,8 @@ export default function PresenceRoom({ data }: { data: Question[] }) {
                 {areAnswersDisplayed
                   ? mainQuestion
                   : oddPlayer === username
-                  ? oddQuestion
-                  : mainQuestion}
+                    ? oddQuestion
+                    : mainQuestion}
               </div>
               {!areAnswersDisplayed && (
                 <div className="flex flex-col gap-2 justify-center items-center">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "../../components/Card";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
@@ -8,17 +8,27 @@ import { Hash, UserRound } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import random from "random-string-generator";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ref, set } from "firebase/database";
 import { db } from "@/lib/firebase";
 
 const JoinCard = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [name, setName] = useState("");
   const [roomID, setRoomID] = useState("");
   const [loadingCreate, setLoadingCreate] = useState(false);
   const [loadingJoin, setLoadingJoin] = useState(false);
+
+  useEffect(() => {
+    const roomFromUrl = searchParams.get("room");
+    if (roomFromUrl) {
+      setRoomID(roomFromUrl.toUpperCase());
+      // Logic: If we have a room ID, the user's next step is the name.
+      // We can toast to let them know the ID was captured.
+    }
+  }, [searchParams]);
 
   const onJoin = () => {
     if (!name) {
@@ -39,13 +49,13 @@ const JoinCard = () => {
     };
     const newPlayerRef = ref(
       db,
-      `rooms/${roomID.toUpperCase()}/players/${name}`
+      `rooms/${roomID.toUpperCase()}/players/${name}`,
     );
 
     set(newPlayerRef, playerData)
       .then(() => {
         router.push(
-          `/room/${roomID.toUpperCase()}?username=${name}&isHost=false`
+          `/room/${roomID.toUpperCase()}?username=${name}&isHost=false`,
         );
       })
       .catch((e) => {
@@ -84,7 +94,7 @@ const JoinCard = () => {
   return (
     <div className="">
       <Card>
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
           <Input
             inputValue={name}
             setInputValue={setName}

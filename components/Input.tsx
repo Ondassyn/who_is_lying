@@ -25,7 +25,7 @@ const Input = ({
             ? "0 0 20px rgba(245, 158, 11, 0.2)"
             : "0 0 0px rgba(245, 158, 11, 0)",
         }}
-        className="relative rounded-xl overflow-hidden bg-linear-to-br from-zinc-800 to-zinc-900 border transition-all"
+        className="relative rounded-xl mt-2 overflow-hidden bg-linear-to-br from-zinc-800 to-zinc-900 border transition-all"
       >
         {Icon && (
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
@@ -40,7 +40,7 @@ const Input = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Type here..."
-          className="w-full py-3.5 pl-12 pr-4 bg-transparent text-amber-300 placeholder:text-zinc-600 focus:outline-none"
+          className="w-full h-12 py-3.5 pl-12 pr-4 bg-transparent text-amber-300 placeholder:text-zinc-600 focus:outline-none"
         />
       </motion.div>
     </div>

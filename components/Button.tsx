@@ -23,7 +23,7 @@ const Button = ({
         onClick={onClick}
         className={`${
           full ? "w-full" : ""
-        } py-2 px-2 bg-linear-to-r from-amber-400 via-orange-500 to-amber-400 rounded-xl text-black shadow-xl relative overflow-hidden group`}
+        } py-2 px-2 h-12 bg-linear-to-r from-amber-400 via-orange-500 to-amber-400 rounded-xl text-black shadow-xl relative overflow-hidden group`}
       >
         <motion.div
           className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent"
